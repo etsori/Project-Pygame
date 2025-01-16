@@ -1,5 +1,6 @@
 import pygame
 import sys
+import random
 
 # Инициализация Pygame
 pygame.init()
@@ -19,14 +20,14 @@ YELLOW = (255, 255, 0)
 # Загрузка изображений
 try:
     bg = pygame.image.load('dragon.jpg')  # Фон
-    player_sheet = pygame.image.load('k_walkjpg.png').convert_alpha()  # Спрайтовый лист для жука
+    player_sheet = pygame.image.load('k_walkjpg.png').convert_alpha()  # Спрайтовый лист для игрока
     platform_image = pygame.image.load('start.jpg')  # Платформа
     dragon_image = pygame.image.load('dragon.png').convert_alpha()  # Дракон
     spike_image = pygame.image.load('spike.png').convert_alpha()  # Шипы
+    fireball_image = pygame.image.load('fireball.png').convert_alpha()  # Огненный шар
 except FileNotFoundError as e:
     print(f"Ошибка загрузки изображений: {e}")
     sys.exit()
-
 
 # Класс для анимированных спрайтов
 class AnimatedSprite(pygame.sprite.Sprite):
@@ -55,11 +56,10 @@ class AnimatedSprite(pygame.sprite.Sprite):
             self.image = self.frames[self.cur_frame]
             self.frame_counter = 0
 
-
 # Класс игрока
 class Player(AnimatedSprite):
     def __init__(self):
-        super().__init__(player_sheet, 6, 1, 400, 100)  # 4 кадра в спрайтовом листе
+        super().__init__(player_sheet, 6, 1, 100, 500)  # 6 кадров в спрайтовом листе
         self.change_x = 0
         self.change_y = 0
         self.level = None
@@ -151,7 +151,6 @@ class Player(AnimatedSprite):
         self.attacking = True
         # Логика атаки (например, проверка столкновения с драконом)
 
-
 # Класс платформы
 class Platform(pygame.sprite.Sprite):
     def __init__(self, width, height, x, y):
@@ -160,14 +159,12 @@ class Platform(pygame.sprite.Sprite):
         self.image.fill(RED)
         self.rect = self.image.get_rect(topleft=(x, y))
 
-
 # Класс шипов
 class Spike(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = spike_image
         self.rect = self.image.get_rect(topleft=(x, y))
-
 
 # Класс монетки
 class Coin(pygame.sprite.Sprite):
@@ -177,18 +174,43 @@ class Coin(pygame.sprite.Sprite):
         pygame.draw.circle(self.image, YELLOW, (10, 10), 10)  # Желтый кружок
         self.rect = self.image.get_rect(topleft=(x, y))
 
-
 # Класс дракона
 class Dragon(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x, y):
         super().__init__()
         self.image = dragon_image
-        self.rect = self.image.get_rect(topleft=(1500, 400))
+        self.rect = self.image.get_rect(topleft=(x, y))
         self.health = 10  # Здоровье дракона
+        self.fireballs = pygame.sprite.Group()  # Группа огненных шаров
+        self.fireball_cooldown = 0
+
+    def update(self, player):
+        # Стрельба огненными шарами, если игрок рядом
+        if abs(self.rect.x - player.rect.x) < 500:  # Зона видимости дракона
+            if self.fireball_cooldown > 0:
+                self.fireball_cooldown -= 1
+            else:
+                self.shoot_fireball()
+                self.fireball_cooldown = 60  # Задержка между выстрелами
+
+        self.fireballs.update()
+
+    def shoot_fireball(self):
+        fireball = Fireball(self.rect.x, self.rect.y + 50)
+        self.fireballs.add(fireball)
+
+# Класс огненного шара
+class Fireball(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = fireball_image
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.speed = -10  # Скорость огненного шара
 
     def update(self):
-        pass
-
+        self.rect.x += self.speed
+        if self.rect.x < 0:
+            self.kill()
 
 # Класс уровня
 class Level:
@@ -205,7 +227,7 @@ class Level:
         self.coin_list.update()
         self.spike_list.update()
         if self.dragon:
-            self.dragon.update()
+            self.dragon.update(self.player)
 
     def draw(self, screen):
         screen.blit(bg, (self.world_shift // 3, 0))
@@ -214,6 +236,7 @@ class Level:
         self.spike_list.draw(screen)
         if self.dragon:
             screen.blit(self.dragon.image, self.dragon.rect)
+            self.dragon.fireballs.draw(screen)
 
     def shift_world(self, shift_x):
         self.world_shift += shift_x
@@ -226,7 +249,6 @@ class Level:
         if self.dragon:
             self.dragon.rect.x += shift_x
 
-
 # Уровень 1
 class Level_01(Level):
     def __init__(self, player):
@@ -237,6 +259,9 @@ class Level_01(Level):
             [210, 32, 800, 400],
             [210, 32, 1200, 300],
             [210, 32, 1600, 500],
+            [210, 32, 2000, 400],
+            [210, 32, 2400, 300],
+            [210, 32, 2800, 500],
         ]
 
         for platform in level:
@@ -248,6 +273,9 @@ class Level_01(Level):
             [600, 450],
             [900, 350],
             [1300, 250],
+            [1700, 450],
+            [2100, 350],
+            [2500, 250],
         ]
 
         for coin in coins:
@@ -257,7 +285,8 @@ class Level_01(Level):
         # Добавляем шипы
         spikes = [
             [700, 550],
-            [1100, 450],
+            [1000, 450],
+            [1900, 500],
         ]
 
         for spike in spikes:
@@ -265,8 +294,7 @@ class Level_01(Level):
             self.spike_list.add(spike_obj)
 
         # Добавляем дракона в конце уровня
-        self.dragon = Dragon()
-
+        self.dragon = Dragon(2800, 400)
 
 # Основная функция
 def main():
@@ -326,6 +354,15 @@ def main():
                     print("Игра окончена!")
                     done = True
 
+        # Проверка столкновения с огненными шарами
+        if level.dragon:
+            fireball_hit_list = pygame.sprite.spritecollide(player, level.dragon.fireballs, True)
+            if fireball_hit_list:
+                player.lives -= 1
+                if player.lives <= 0:
+                    print("Игра окончена!")
+                    done = True
+
         all_sprites.update()
         level.update()
 
@@ -352,7 +389,6 @@ def main():
         clock.tick(60)
 
     pygame.quit()
-
 
 if __name__ == "__main__":
     main()
