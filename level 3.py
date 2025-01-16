@@ -59,7 +59,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
 # Класс игрока
 class Player(AnimatedSprite):
     def __init__(self):
-        super().__init__(player_sheet, 6, 1, 439, 90)  # 4 кадра в спрайтовом листе
+        super().__init__(player_sheet, 6, 1, 400, 100)  # 4 кадра в спрайтовом листе
         self.change_x = 0
         self.change_y = 0
         self.level = None
