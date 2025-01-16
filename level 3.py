@@ -19,13 +19,14 @@ YELLOW = (255, 255, 0)
 # Загрузка изображений
 try:
     bg = pygame.image.load('dragon.jpg')  # Фон
-    player_sheet = pygame.image.load('beetle.png').convert_alpha()  # Спрайтовый лист для жука
+    player_sheet = pygame.image.load('k_walkjpg.png').convert_alpha()  # Спрайтовый лист для жука
     platform_image = pygame.image.load('start.jpg')  # Платформа
     dragon_image = pygame.image.load('dragon.png').convert_alpha()  # Дракон
     spike_image = pygame.image.load('spike.png').convert_alpha()  # Шипы
 except FileNotFoundError as e:
     print(f"Ошибка загрузки изображений: {e}")
     sys.exit()
+
 
 # Класс для анимированных спрайтов
 class AnimatedSprite(pygame.sprite.Sprite):
@@ -54,10 +55,11 @@ class AnimatedSprite(pygame.sprite.Sprite):
             self.image = self.frames[self.cur_frame]
             self.frame_counter = 0
 
+
 # Класс игрока
 class Player(AnimatedSprite):
     def __init__(self):
-        super().__init__(player_sheet, 4, 1, 100, 500)  # 4 кадра в спрайтовом листе
+        super().__init__(player_sheet, 6, 1, 439, 90)  # 4 кадра в спрайтовом листе
         self.change_x = 0
         self.change_y = 0
         self.level = None
@@ -149,6 +151,7 @@ class Player(AnimatedSprite):
         self.attacking = True
         # Логика атаки (например, проверка столкновения с драконом)
 
+
 # Класс платформы
 class Platform(pygame.sprite.Sprite):
     def __init__(self, width, height, x, y):
@@ -157,12 +160,14 @@ class Platform(pygame.sprite.Sprite):
         self.image.fill(RED)
         self.rect = self.image.get_rect(topleft=(x, y))
 
+
 # Класс шипов
 class Spike(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
         self.image = spike_image
         self.rect = self.image.get_rect(topleft=(x, y))
+
 
 # Класс монетки
 class Coin(pygame.sprite.Sprite):
@@ -171,6 +176,7 @@ class Coin(pygame.sprite.Sprite):
         self.image = pygame.Surface((20, 20), pygame.SRCALPHA)  # Прозрачная поверхность
         pygame.draw.circle(self.image, YELLOW, (10, 10), 10)  # Желтый кружок
         self.rect = self.image.get_rect(topleft=(x, y))
+
 
 # Класс дракона
 class Dragon(pygame.sprite.Sprite):
@@ -182,6 +188,7 @@ class Dragon(pygame.sprite.Sprite):
 
     def update(self):
         pass
+
 
 # Класс уровня
 class Level:
@@ -218,6 +225,7 @@ class Level:
             spike.rect.x += shift_x
         if self.dragon:
             self.dragon.rect.x += shift_x
+
 
 # Уровень 1
 class Level_01(Level):
@@ -258,6 +266,7 @@ class Level_01(Level):
 
         # Добавляем дракона в конце уровня
         self.dragon = Dragon()
+
 
 # Основная функция
 def main():
@@ -343,6 +352,7 @@ def main():
         clock.tick(60)
 
     pygame.quit()
+
 
 if __name__ == "__main__":
     main()
