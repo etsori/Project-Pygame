@@ -17,7 +17,7 @@ background = pygame.transform.scale(background, (WIDTH * 4, HEIGHT))
 finish_level_image = pygame.image.load(os.path.join("data", "finish_level.jpg")).convert_alpha()
 finish_level_image = pygame.transform.scale(finish_level_image, (WIDTH, HEIGHT))  # Масштабируем изображение
 
-sprite_sheet = pygame.image.load(os.path.join("k_walkjpg.png")).convert_alpha()
+sprite_sheet = pygame.image.load(os.path.join("data/levels/k_walkjpg.png")).convert_alpha()
 
 frame_width = sprite_sheet.get_width() // 6  # Ширина одного кадра
 frame_height = sprite_sheet.get_height()  # Высота кадра
