@@ -1,5 +1,6 @@
 import pygame
 import sys
+import time
 
 # Инициализация Pygame
 pygame.init()
@@ -21,12 +22,15 @@ try:
     bg = pygame.image.load('dragon.jpg')  # Фон
     player_sheet = pygame.image.load('k_walkjpg.png').convert_alpha()  # Спрайтовый лист для игрока
     platform_image = pygame.image.load('start.jpg')  # Платформа
-    dragon_image = pygame.image.load('dragon.png').convert_alpha()  # Дракон
+    dragon_image = pygame.image.load('dragon.png').convert()  # Загружаем изображение дракона
     spike_image = pygame.image.load('spike.png').convert_alpha()  # Шипы
-    fireball_sheet = pygame.image.load('fireball.png').convert_alpha()  # Спрайтовый лист для огненных шаров
 except FileNotFoundError as e:
     print(f"Ошибка загрузки изображений: {e}")
     sys.exit()
+
+# Удаляем белый фон дракона программно
+dragon_image.set_colorkey(WHITE)  # Устанавливаем белый цвет как прозрачный
+dragon_image = dragon_image.convert_alpha()  # Преобразуем в формат с прозрачностью
 
 # Класс для анимированных спрайтов
 class AnimatedSprite(pygame.sprite.Sprite):
@@ -66,6 +70,8 @@ class Player(AnimatedSprite):
         self.lives = 5  # Количество жизней
         self.coins = 0  # Количество монеток
         self.attacking = False  # Атака
+        self.on_spikes = False  # Находится ли на шипах
+        self.last_spike_damage_time = 0  # Время последнего урона от шипов
 
     def update(self):
         super().update()
@@ -99,11 +105,18 @@ class Player(AnimatedSprite):
         # Проверка столкновения с шипами
         spike_hit_list = pygame.sprite.spritecollide(self, self.level.spike_list, False)
         if spike_hit_list:
-            self.lives -= 1
-            if self.lives <= 0:
-                print("Игра окончена!")
-                pygame.quit()
-                sys.exit()
+            self.on_spikes = True
+            current_time = time.time()
+            if current_time - self.last_spike_damage_time >= 3:  # Урон каждые 3 секунды
+                self.lives -= 1
+                self.last_spike_damage_time = current_time
+                print(f"Жизней осталось: {self.lives}")
+                if self.lives <= 0:
+                    print("Игра окончена!")
+                    pygame.quit()
+                    sys.exit()
+        else:
+            self.on_spikes = False
 
     def calc_grav(self):
         if self.change_y == 0:
@@ -171,45 +184,29 @@ class Coin(pygame.sprite.Sprite):
         pygame.draw.circle(self.image, YELLOW, (10, 10), 10)  # Желтый кружок
         self.rect = self.image.get_rect(topleft=(x, y))
 
-# Класс анимированного огненного шара
-class AnimatedFireball(AnimatedSprite):
-    def __init__(self, x, y, direction):
-        super().__init__(fireball_sheet, 4, 1, x, y)  # 4 кадра в спрайтовом листе
-        self.speed = -10 if direction == "left" else 10  # Скорость огненного шара
-        self.direction = direction
-
-    def update(self):
-        super().update()
-        self.rect.x += self.speed
-        if self.rect.x < 0 or self.rect.x > SCREEN_WIDTH:
-            self.kill()
-
 # Класс дракона
 class Dragon(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = dragon_image
+        self.image = dragon_image  # Изображение с прозрачным фоном
         self.rect = self.image.get_rect(topleft=(x, y))
         self.health = 3  # Здоровье дракона
-        self.fireballs = pygame.sprite.Group()  # Группа огненных шаров
-        self.fireball_cooldown = 2000  # Задержка между выстрелами (2 секунды)
-        self.last_shot_time = pygame.time.get_ticks()
+        self.last_attack_time = time.time()  # Время последней атаки
 
     def update(self, player):
-        # Стрельба огненными шарами, если игрок в зоне видимости
-        if abs(self.rect.x - player.rect.x) < 500:  # Зона видимости дракона
-            current_time = pygame.time.get_ticks()
-            if current_time - self.last_shot_time > self.fireball_cooldown:
-                self.shoot_fireball(player)
-                self.last_shot_time = current_time
+        current_time = time.time()
+        if current_time - self.last_attack_time >= 2:  # Атака каждые 2 секунды
+            self.attack(player)
+            self.last_attack_time = current_time
 
-        self.fireballs.update()
-
-    def shoot_fireball(self, player):
-        # Определяем направление огненного шара
-        direction = "left" if player.rect.x < self.rect.x else "right"
-        fireball = AnimatedFireball(self.rect.x, self.rect.y + 50, direction)
-        self.fireballs.add(fireball)
+    def attack(self, player):
+        if pygame.sprite.collide_rect(self, player):
+            player.lives -= 1
+            print(f"Дракон атаковал! Жизней осталось: {player.lives}")
+            if player.lives <= 0:
+                print("Игра окончена!")
+                pygame.quit()
+                sys.exit()
 
     def take_damage(self):
         self.health -= 1
@@ -242,7 +239,6 @@ class Level:
         self.spike_list.draw(screen)
         if self.dragon:
             screen.blit(self.dragon.image, self.dragon.rect)
-            self.dragon.fireballs.draw(screen)
 
     def shift_world(self, shift_x):
         self.world_shift += shift_x
@@ -328,6 +324,8 @@ def main():
                     player.jump()
                 if event.key == pygame.K_SPACE:  # Атака
                     player.attack()
+                if event.key == pygame.K_ESCAPE:  # Выход из игры
+                    done = True
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT and player.change_x < 0:
@@ -346,15 +344,6 @@ def main():
         for coin in coin_hit_list:
             player.coins += 1
             print(f"Монеток собрано: {player.coins}")
-
-        # Проверка столкновения с огненными шарами
-        if level.dragon:
-            fireball_hit_list = pygame.sprite.spritecollide(player, level.dragon.fireballs, True)
-            if fireball_hit_list:
-                player.lives -= 1
-                if player.lives <= 0:
-                    print("Игра окончена!")
-                    done = True
 
         all_sprites.update()
         level.update()
