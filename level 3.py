@@ -19,7 +19,7 @@ YELLOW = (255, 255, 0)
 # Загрузка изображений
 try:
     bg = pygame.image.load('dragon.jpg')  # Фон
-    player_sheet = pygame.image.load('k_walkjpg.png').convert_alpha()  # Спрайтовый лист для игрока
+    player_sheet = pygame.image.load('data/sprite_knight\k_walkjpg.png').convert_alpha()  # Спрайтовый лист для игрока
     platform_image = pygame.image.load('start.jpg')  # Платформа
     dragon_image = pygame.image.load('dragon.png').convert_alpha()  # Дракон
     spike_image = pygame.image.load('spike.png').convert_alpha()  # Шипы
