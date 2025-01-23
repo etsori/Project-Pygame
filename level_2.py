@@ -1,5 +1,6 @@
 import os
 import pygame
+import time  # Импортируем модуль time для задержки
 
 pygame.init()
 
@@ -14,6 +15,9 @@ screen = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 
 all_sprites = pygame.sprite.Group()
+
+# Переменная для отслеживания завершения уровня
+level_complete = False
 
 
 # Функция загрузки изображений
@@ -75,6 +79,8 @@ class Player(AnimatedSprite):
         return frames
 
     def update(self):
+        global level_complete
+
         keys = pygame.key.get_pressed()
         self.is_moving = False
 
@@ -105,6 +111,10 @@ class Player(AnimatedSprite):
 
         super().update()
         self.image = pygame.transform.flip(self.frames[self.cur_frame], self.direction == -1, False)
+
+        # Проверка на завершение уровня
+        if self.rect.right >= background_width * 4:  # Предполагаем, что уровень заканчивается на 4-кратной ширине фона
+            level_complete = True
 
     def check_collision(self):
         global camera_x
@@ -139,7 +149,7 @@ platform_image = pygame.image.load(os.path.join("data", "plat_unfon3.png")).conv
 platform_image = pygame.transform.scale(platform_image, (200, 60))
 platform_image.set_colorkey((255, 255, 255))
 
-# Платформы (опущены ниже)
+# Платформы
 platforms = [
     {"rect": pygame.Rect(0, height - 50, width * 4, 50), "image": None},  # Основная платформа внизу
     {"rect": pygame.Rect(300, 450, 200, 20), "image": platform_image},
@@ -182,6 +192,15 @@ while running:
     font = pygame.font.Font(None, 36)
     lives_text = font.render(f"Lives: {knight.lives}", True, (255, 255, 255))
     screen.blit(lives_text, (10, 10))
+
+    # Проверка завершения уровня
+    if level_complete:
+        font = pygame.font.Font(None, 74)
+        text = font.render("Level Complete!", True, (255, 255, 255))
+        screen.blit(text, (width // 2 - 200, height // 2 - 50))
+        pygame.display.flip()  # Обновляем экран, чтобы показать сообщение
+        time.sleep(3)  # Задержка 3 секунды перед закрытием игры
+        running = False  # Завершение игры
 
     pygame.display.update()
 
