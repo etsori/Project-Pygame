@@ -119,26 +119,10 @@ class Player(AnimatedSprite):
                     self.is_jumping = False
                     self.velocity_y = 0
                     on_ground = True
-
-        # Гравитация, если не на платформе
         if not on_ground and self.rect.bottom < height:
             self.is_jumping = True
 
-
-
-        # Камера центрируется на игроке
         camera_x = max(0, self.rect.centerx - width // 2)
-
-
-# Класс врага (дерево)
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self, image_path, x, y, width, height):
-        super().__init__()
-        self.image = pygame.transform.scale(load_image(image_path), (width, height))
-        self.rect = self.image.get_rect(topleft=(x, y))
-
-    def draw(self, screen, camera_x):
-        screen.blit(self.image, (self.rect.x - camera_x, self.rect.y))
 
 
 # Загрузка изображений
@@ -165,7 +149,6 @@ platforms = [
     {"rect": pygame.Rect(1600, 320, 150, 20), "image": platform_image},
     {"rect": pygame.Rect(1950, 250, 200, 20), "image": platform_image},
 ]
-
 
 knight = Player(walk_image, k_image, 6, 1, 100, 490)
 
