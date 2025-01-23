@@ -97,6 +97,7 @@ is_jumping = False
 camera_x = 0
 
 game_over = False
+level_complete = False  # Переменная для отслеживания завершения уровня
 
 # Жизни персонажа
 lives = 5
@@ -190,7 +191,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    if not game_over:
+    if not game_over and not level_complete:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
             player_rect.x -= player_speed
@@ -225,11 +226,12 @@ while running:
         if camera_x > background.get_width() - WIDTH:
             camera_x = background.get_width() - WIDTH
 
+        # Проверка на завершение уровня
         if player_rect.right >= background.get_width():
-            game_over = True
+            level_complete = True
 
         # Проверка столкновений с врагами
-        for enemy in enemies[:]: # копия
+        for enemy in enemies[:]:  # копия
             if enemy.active and player_rect.colliderect(enemy.rect):
                 if is_attacking:
                     enemies.remove(enemy)  # Удаляем врага навсегда
@@ -276,7 +278,7 @@ while running:
             pygame.draw.rect(screen, BLACK, (platform["rect"].x - camera_x, platform["rect"].y, platform["rect"].width, platform["rect"].height))
 
     # Анимация персонажа
-    if not game_over:
+    if not game_over and not level_complete:
         if is_attacking:
             # Анимация атаки
             attack_frame_timer += delta_time
@@ -297,19 +299,27 @@ while running:
                 screen.blit(frames_right[current_frame], (player_rect.x - camera_x, player_rect.y))
             else:
                 screen.blit(frames_left[current_frame], (player_rect.x - camera_x, player_rect.y))
-    else:
+    elif game_over:
         screen.blit(finish_level_image, (0, 0))
+    elif level_complete:
+        # Отображение сообщения о завершении уровня
+        font = pygame.font.Font(None, 74)
+        text = font.render("Level Complete!", True, WHITE)
+        screen.blit(text, (WIDTH // 2 - 200, HEIGHT // 2 - 50))
+        pygame.display.flip()
+        time.sleep(3)  # Задержка перед закрытием игры
+        running = False  # Завершение игры
 
     # Обновление и отрисовка врагов
-    if not game_over:
+    if not game_over and not level_complete:
         for enemy in enemies:
             enemy.update()
             enemy.draw(screen)
 
-    if not game_over:
+    if not game_over and not level_complete:
         slime.draw(screen)
 
-    if not game_over:
+    if not game_over and not level_complete:
         slime2.draw(screen)
 
     # Отображение жизней
