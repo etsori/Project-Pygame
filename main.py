@@ -135,6 +135,7 @@ def registration_screen():
         draw_text(screen, "Логин: " + username + ("|" if cursor_visible and input_active == "username" else ""), pygame.font.SysFont('serif', 30), (255, 255, 255), 300, 150)
         draw_text(screen, "Пароль: " + "*" * len(password) + ("|" if cursor_visible and input_active == "password" else ""), pygame.font.SysFont('serif', 30), (255, 255, 255), 300, 200)
         draw_text(screen, "Нажмите Enter для подтверждения", pygame.font.SysFont('serif', 20), (255, 255, 255), 250, 250)
+        draw_text(screen, "Нажмите Esc для возврата в меню", pygame.font.SysFont('serif', 20), (255, 255, 255), 250, 300)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -147,9 +148,9 @@ def registration_screen():
                             print(f"Пользователь {username} зарегистрирован с ID: {user_id}")
                             return
                         else:
-                            draw_text(screen, "Ошибка: пользователь уже существует", pygame.font.SysFont('serif', 20), (255, 0, 0), 250, 300)
+                            draw_text(screen, "Ошибка: пользователь уже существует", pygame.font.SysFont('serif', 20), (255, 0, 0), 250, 350)
                     else:
-                        draw_text(screen, "Ошибка: заполните все поля", pygame.font.SysFont('serif', 20), (255, 0, 0), 250, 300)
+                        draw_text(screen, "Ошибка: заполните все поля", pygame.font.SysFont('serif', 20), (255, 0, 0), 250, 350)
                 elif event.key == pygame.K_BACKSPACE:
                     if input_active == "username" and len(username) > 0:
                         username = username[:-1]
@@ -157,6 +158,8 @@ def registration_screen():
                         password = password[:-1]
                 elif event.key == pygame.K_TAB:
                     input_active = "password" if input_active == "username" else "username"
+                elif event.key == pygame.K_ESCAPE:  # Кнопка "Назад"
+                    return
                 else:
                     if event.unicode.isalnum():
                         if input_active == "username" and len(username) < 10:
@@ -189,6 +192,7 @@ def login_screen():
         draw_text(screen, "Логин: " + username + ("|" if cursor_visible and input_active == "username" else ""), pygame.font.SysFont('serif', 30), (255, 255, 255), 300, 150)
         draw_text(screen, "Пароль: " + "*" * len(password) + ("|" if cursor_visible and input_active == "password" else ""), pygame.font.SysFont('serif', 30), (255, 255, 255), 300, 200)
         draw_text(screen, "Нажмите Enter для подтверждения", pygame.font.SysFont('serif', 20), (255, 255, 255), 250, 250)
+        draw_text(screen, "Нажмите Esc для возврата в меню", pygame.font.SysFont('serif', 20), (255, 255, 255), 250, 300)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -201,9 +205,9 @@ def login_screen():
                             print(f"Пользователь {username} вошел с ID: {user_id}")
                             return user_id
                         else:
-                            draw_text(screen, "Ошибка: неверный логин или пароль", pygame.font.SysFont('serif', 20), (255, 0, 0), 250, 300)
+                            draw_text(screen, "Ошибка: неверный логин или пароль", pygame.font.SysFont('serif', 20), (255, 0, 0), 250, 350)
                     else:
-                        draw_text(screen, "Ошибка: заполните все поля", pygame.font.SysFont('serif', 20), (255, 0, 0), 250, 300)
+                        draw_text(screen, "Ошибка: заполните все поля", pygame.font.SysFont('serif', 20), (255, 0, 0), 250, 350)
                 elif event.key == pygame.K_BACKSPACE:
                     if input_active == "username" and len(username) > 0:
                         username = username[:-1]
@@ -211,6 +215,8 @@ def login_screen():
                         password = password[:-1]
                 elif event.key == pygame.K_TAB:
                     input_active = "password" if input_active == "username" else "username"
+                elif event.key == pygame.K_ESCAPE:  # Кнопка "Назад"
+                    return None
                 else:
                     if event.unicode.isalnum():
                         if input_active == "username" and len(username) < 10:
@@ -278,15 +284,15 @@ def main_menu():
                     if 50 <= y <= 100:
                         start_level(1)  # Запуск уровня 1
                     elif 150 <= y <= 180:
-                        registration_screen()
+                        registration_screen()  # Переход на экран регистрации
                     elif 200 <= y <= 230:
-                        user_id = login_screen()
+                        user_id = login_screen()  # Переход на экран входа
                         if user_id:
-                            levels_screen(user_id)
+                            levels_screen(user_id)  # Переход на экран уровней
                     elif 250 <= y <= 280:
-                        rules_screen()
+                        rules_screen()  # Переход на экран правил
                     elif 300 <= y <= 330:
-                        terminate()
+                        terminate()  # Выход из игры
 
         pygame.display.flip()
         clock.tick(FPS)
