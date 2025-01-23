@@ -18,7 +18,7 @@ finish_level_image = pygame.image.load(os.path.join("data", "finish_level.jpg"))
 finish_level_image = pygame.transform.scale(finish_level_image, (WIDTH, HEIGHT))  # Масштабируем изображение
 
 # Загрузка спрайтового листа персонажа
-sprite_sheet = pygame.image.load(os.path.join("data", "levels", "k_walkjpg.png")).convert_alpha()
+sprite_sheet = pygame.image.load(os.path.join("data", "sprite_knight", "k_walkjpg.png")).convert_alpha()
 
 # Разделение спрайтового листа на кадры
 frame_width = sprite_sheet.get_width() // 6  # Ширина одного кадра
