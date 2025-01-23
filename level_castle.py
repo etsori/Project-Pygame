@@ -101,6 +101,35 @@ game_over = False
 # Жизни персонажа
 lives = 5
 
+# Загрузка изображения слизи
+slime_image = pygame.image.load(os.path.join("data", "slime2.png")).convert_alpha()
+slime_image = pygame.transform.scale(slime_image, (150, 70))  # Увеличиваем размер слизи
+
+
+# Класс для ядовитой слизи
+class Slime:
+    def __init__(self, x, y):
+        self.image = slime_image
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.active = False
+        self.last_activation_time = time.time()
+
+    def update(self):
+        # Активация слизи каждые 5 секунд
+        current_time = time.time()
+        if current_time - self.last_activation_time >= 5:
+            self.active = not self.active  # Переключаем активность
+            self.last_activation_time = current_time
+
+    def draw(self, screen):
+        # Отрисовка слизи (даже если она неактивна)
+        screen.blit(self.image, (self.rect.x - camera_x, self.rect.y))
+
+
+# Создание слизи
+slime = Slime(500, HEIGHT - 70)  # Позиция слизи
+slime2 = Slime(1300, HEIGHT - 210)
+
 
 # Враги
 class Enemy:
@@ -149,8 +178,8 @@ class Enemy:
 
 
 # Создание врагов с увеличенным масштабом
-enemy1 = Enemy(os.path.join("data", "enemies", "ghost_unfon.png"), 100, HEIGHT - 150, 100, WIDTH // 2, 2, scale_factor=1.5)
-enemy2 = Enemy(os.path.join("data", "enemies", "pumpking_unfon.png"), WIDTH // 2, HEIGHT - 150, WIDTH // 2, WIDTH * 4 - 100, 2, scale_factor=1.5)
+enemy1 = Enemy(os.path.join("data", "enemies", "ghost_unfon.png"), 100, HEIGHT - 150, 30, WIDTH // 2, 2, scale_factor=1.5)
+enemy2 = Enemy(os.path.join("data", "enemies", "pumpking_unfon.png"), WIDTH // 2, HEIGHT - 150, 400, WIDTH * 4 - 100, 2, scale_factor=1.5)
 enemies = [enemy1, enemy2]
 
 running = True
@@ -200,7 +229,7 @@ while running:
             game_over = True
 
         # Проверка столкновений с врагами
-        for enemy in enemies[:]:  # Используем копию списка, чтобы избежать ошибок при удалении
+        for enemy in enemies[:]: # копия
             if enemy.active and player_rect.colliderect(enemy.rect):
                 if is_attacking:
                     enemies.remove(enemy)  # Удаляем врага навсегда
@@ -216,6 +245,24 @@ while running:
         for enemy in enemies:
             if not enemy.active and current_time - enemy.last_collision_time >= 3:
                 enemy.active = True
+
+        # Обновление слизи
+        slime.update()
+        slime2.update()
+
+        # Проверка столкновения с персонажем
+        if slime.active and player_rect.colliderect(slime.rect):
+            lives -= 1
+            slime.active = False  # Деактивируем слизь после касания
+            if lives <= 0:
+                game_over = True
+
+        # Проверка столкновения со второй слизью
+        if slime2.active and player_rect.colliderect(slime2.rect):
+            lives -= 1
+            slime2.active = False  # Деактивируем слизь после касания
+            if lives <= 0:
+                game_over = True
 
     screen.fill(BLACK)
 
@@ -254,9 +301,16 @@ while running:
         screen.blit(finish_level_image, (0, 0))
 
     # Обновление и отрисовка врагов
-    for enemy in enemies:
-        enemy.update()
-        enemy.draw(screen)
+    if not game_over:
+        for enemy in enemies:
+            enemy.update()
+            enemy.draw(screen)
+
+    if not game_over:
+        slime.draw(screen)
+
+    if not game_over:
+        slime2.draw(screen)
 
     # Отображение жизней
     font = pygame.font.Font(None, 36)
