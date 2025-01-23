@@ -67,7 +67,7 @@ Level 3. -
 
 ## Руководство программиста:
 Одна ветка: ```master```
-Всего четыре py файла: ```main.py```, ```level1```, ``level2```, ```level3`` 
+Всего четыре py файла: ```main.py```, ```level1```, ```level2```, ```level3`` 
 Использованы библиотеки: pygame, os, time
 Использованы классы: Slime, Enemy, AnimatedSprite, Player, Platform, Spike, Coin, Dragon, Level, Level_01
 
