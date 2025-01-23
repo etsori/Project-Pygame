@@ -6,7 +6,7 @@ import importlib.util
 
 # Инициализация Pygame
 pygame.init()
-size = width, height = 800, 400
+size = width, height = 800, 600
 screen = pygame.display.set_mode(size)
 FPS = 50
 clock = pygame.time.Clock()
@@ -305,10 +305,18 @@ def rules_screen():
         screen.blit(fon, (0, 0))
 
         draw_text(screen, "Правила игры", pygame.font.SysFont('serif', 50), (255, 255, 255), 250, 50)
-        draw_text(screen, "1. Правило 1", pygame.font.SysFont('serif', 30), (255, 255, 255), 300, 150)
-        draw_text(screen, "2. Правило 2", pygame.font.SysFont('serif', 30), (255, 255, 255), 300, 200)
-        draw_text(screen, "3. Правило 3", pygame.font.SysFont('serif', 30), (255, 255, 255), 300, 250)
-        draw_text(screen, "Нажмите любую клавишу для возврата", pygame.font.SysFont('serif', 20), (255, 255, 255), 250, 300)
+        draw_text(screen, "1. Управление:", pygame.font.SysFont('serif', 30), (255, 255, 255), 100, 120)
+        draw_text(screen, "   - Используйте стрелки влево и вправо для перемещения.", pygame.font.SysFont('serif', 25), (255, 255, 255), 120, 160)
+        draw_text(screen, "   - Нажмите стрелку вверх, чтобы прыгнуть.", pygame.font.SysFont('serif', 25), (255, 255, 255), 120, 190)
+        draw_text(screen, "   - Используйте Shift для атаки.", pygame.font.SysFont('serif', 25), (255, 255, 255), 120, 220)
+        draw_text(screen, "2. Цель игры:", pygame.font.SysFont('serif', 30), (255, 255, 255), 100, 260)
+        draw_text(screen, "   - Пройдите все уровни, чтобы завершить игру.", pygame.font.SysFont('serif', 25), (255, 255, 255), 120, 300)
+        draw_text(screen, "   - Избегайте врагов и опасностей.", pygame.font.SysFont('serif', 25), (255, 255, 255), 120, 330)
+        draw_text(screen, "3. Жизни:", pygame.font.SysFont('serif', 30), (255, 255, 255), 100, 370)
+        draw_text(screen, "   - У вас есть 3 жизни. Потеряйте их все, и игра закончится.", pygame.font.SysFont('serif', 25), (255, 255, 255), 120, 410)
+        draw_text(screen, "4. Прогресс:", pygame.font.SysFont('serif', 30), (255, 255, 255), 100, 450)
+        draw_text(screen, "   - Ваш прогресс сохраняется после каждого уровня.", pygame.font.SysFont('serif', 25), (255, 255, 255), 120, 490)
+        draw_text(screen, "Нажмите любую клавишу для возврата", pygame.font.SysFont('serif', 20), (255, 255, 255), 250, 550)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
