@@ -56,23 +56,19 @@ frame = attack_sprite_sheet.subsurface(pygame.Rect(347, 0, 132, attack_frame_hei
 attack_frames_right.append(frame)
 attack_frames_left.append(pygame.transform.flip(frame, True, False))  # Отражаем кадр для движения влево
 
-# Анимация персонажа
 current_frame = 0
 animation_speed = 0.2
 frame_timer = 0
 
-# Анимация атаки
 is_attacking = False
 attack_frame_timer = 0
 attack_animation_speed = 0.2
 current_attack_frame = 0
 
-# Позиция и размеры персонажа
 player_rect = frames_right[0].get_rect(center=(WIDTH // 2, HEIGHT // 2))
 
 direction = "right"
 
-# Загрузка изображений платформ
 platform_image = pygame.image.load(os.path.join("data", "plat_unfon3.png")).convert_alpha()
 platform_image = pygame.transform.scale(platform_image, (200, 60))
 platform_image.set_colorkey((255, 255, 255))
@@ -104,7 +100,7 @@ lives = 5
 class Enemy:
     def __init__(self, sprite_sheet_path, x, y, min_x, max_x, speed, scale_factor=1.0):
         self.sprite_sheet = pygame.image.load(sprite_sheet_path).convert_alpha()
-        self.scale_factor = scale_factor  # Коэффициент масштабирования
+        self.scale_factor = scale_factor  
         self.frames = self.load_frames()
         self.current_frame = 0
         self.frame_timer = 0
@@ -113,7 +109,7 @@ class Enemy:
         self.min_x = min_x
         self.max_x = max_x
         self.speed = speed
-        self.direction = 1  # 1 - вправо, -1 - влево
+        self.direction = 1  
         self.active = True
         self.last_collision_time = 0
 
@@ -124,7 +120,6 @@ class Enemy:
         for row in range(4):
             for col in range(3):
                 frame = self.sprite_sheet.subsurface(pygame.Rect(col * frame_width, row * frame_height, frame_width, frame_height))
-                # Масштабируем кадр
                 frame = pygame.transform.scale(frame, (int(frame_width * self.scale_factor), int(frame_height * self.scale_factor)))
                 frames.append(frame)
         return frames
@@ -133,9 +128,8 @@ class Enemy:
         if self.active:
             self.rect.x += self.speed * self.direction
             if self.rect.right >= self.max_x or self.rect.left <= self.min_x:
-                self.direction *= -1  # Меняем направление
+                self.direction *= -1  
 
-            # Анимация
             self.frame_timer += delta_time
             if self.frame_timer >= self.animation_speed:
                 self.frame_timer = 0
@@ -145,8 +139,6 @@ class Enemy:
         if self.active:
             screen.blit(self.frames[self.current_frame], (self.rect.x - camera_x, self.rect.y))
 
-
-# Создание врагов с увеличенным масштабом
 enemy1 = Enemy(os.path.join("data", "enemies", "ghost_unfon.png"), 100, HEIGHT - 150, 30, WIDTH // 2, 2, scale_factor=1.5)
 enemy2 = Enemy(os.path.join("data", "enemies", "pumpking_unfon.png"), WIDTH // 2, HEIGHT - 150, 400, WIDTH * 4 - 100, 2, scale_factor=1.5)
 enemies = [enemy1, enemy2]
@@ -174,13 +166,12 @@ while running:
             is_jumping = True
             player_velocity_y = jump_speed
 
-        # Атака
         if keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]:
             is_attacking = True
         else:
             is_attacking = False
 
-        # Гравитация
+      
         player_velocity_y += gravity
         player_rect.y += player_velocity_y
 
@@ -197,11 +188,11 @@ while running:
         if player_rect.right >= background.get_width():
             game_over = True
 
-        # Проверка столкновений с врагами
-        for enemy in enemies[:]: # копия
+        
+        for enemy in enemies[:]: 
             if enemy.active and player_rect.colliderect(enemy.rect):
                 if is_attacking:
-                    enemies.remove(enemy)  # Удаляем врага навсегда
+                    enemies.remove(enemy) 
                 else:
                     lives -= 1
                     enemy.active = False
@@ -220,17 +211,16 @@ while running:
 
     screen.blit(background, (-camera_x, 0))
 
-    # Отрисовка платформ с учётом камеры
     for platform in platforms:
-        if platform["image"]:  # Если есть изображение платформы
+        if platform["image"]:  
             screen.blit(platform["image"], (platform["rect"].x - camera_x, platform["rect"].y))
-        else:  # Если платформа без изображения (основная платформа)
+        else:  
             pygame.draw.rect(screen, BLACK, (platform["rect"].x - camera_x, platform["rect"].y, platform["rect"].width, platform["rect"].height))
 
-    # Анимация персонажа
+  
     if not game_over:
         if is_attacking:
-            # Анимация атаки
+
             attack_frame_timer += delta_time
             if attack_frame_timer >= attack_animation_speed:
                 attack_frame_timer = 0
@@ -240,7 +230,6 @@ while running:
             else:
                 screen.blit(attack_frames_left[current_attack_frame], (player_rect.x - camera_x, player_rect.y))
         else:
-            # Анимация ходьбы
             frame_timer += delta_time
             if frame_timer >= animation_speed:
                 frame_timer = 0
