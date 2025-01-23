@@ -20,7 +20,7 @@ YELLOW = (255, 255, 0)
 # Загрузка изображений
 try:
     bg = pygame.image.load('data/levels/dragon.jpg')  # Фон
-    player_sheet = pygame.image.load('data/sprite_knight\k_walkjpg.png').convert_alpha()  # Спрайтовый лист для игрока
+    player_sheet = pygame.image.load('data/sprite_knight/k_walkjpg.png').convert_alpha()  # Спрайтовый лист для игрока
     platform_image = pygame.image.load('data/levels/start.jpg')  # Платформа
     dragon_image = pygame.image.load('data/levels/dragon.png').convert()  # Загружаем изображение дракона
     spike_image = pygame.image.load('data/levels/spike.png').convert_alpha()  # Шипы
@@ -307,8 +307,8 @@ class Level_01(Level):
         self.dragon = Dragon(2800, 300)  # Дракон летает в воздухе
 
 
-# Основная функция
-def main():
+# Функция для запуска уровня
+def run_level():
     player = Player()
     level = Level_01(player)
     player.level = level
@@ -383,4 +383,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_level()

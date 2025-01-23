@@ -251,6 +251,7 @@ def levels_screen(user_id):
                     if 300 <= x <= 350 and 150 + i * 50 <= y <= 200 + i * 50:
                         update_progress(user_id, i, True)  # Сохраняем прогресс
                         print(f"Выбран уровень {i}")
+                        start_level(i)  # Запуск уровня
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -314,7 +315,7 @@ def rules_screen():
 
 # Запуск уровня
 def start_level(level):
-    level_file = f"levels/level{level}.py"
+    level_file = f"level{level}.py"
     if not os.path.exists(level_file):
         print(f"Файл уровня '{level_file}' не найден")
         return
@@ -329,6 +330,10 @@ def start_level(level):
         level_module.run_level()  # Запуск функции уровня
     else:
         print(f"Функция 'run_level' не найдена в файле '{level_file}'")
+
+    # После завершения уровня переходим на следующий
+    if level < 3:  # Если это не последний уровень
+        start_level(level + 1)  # Переход на следующий уровень
 
 # Основной цикл
 running = True
