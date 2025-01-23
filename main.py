@@ -161,7 +161,63 @@ def registration_screen():
                 elif event.key == pygame.K_ESCAPE:  # Кнопка "Назад"
                     return
                 else:
-                    if event.unicode.isalnum():
+                    if event.unicode.isalnum() or event.unicode in ['_', '-']:  # Разрешаем буквы, цифры и некоторые символы
+                        if input_active == "username" and len(username) < 10:
+                            username += event.unicode
+                        elif input_active == "password" and len(password) < 10:
+                            password += event.unicode
+
+        cursor_timer += 1
+        if cursor_timer >= 30:
+            cursor_visible = not cursor_visible
+            cursor_timer = 0
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+def login_screen():
+    username = ""
+    password = ""
+    input_active = "username"  # Определяем, какое поле активно
+    cursor_visible = True
+    cursor_timer = 0
+
+    while True:
+        screen.fill((0, 0, 0))
+        fon = pygame.transform.scale(load_image('start.jpg'), (width, height))
+        screen.blit(fon, (0, 0))
+
+        draw_text(screen, "Вход", pygame.font.SysFont('serif', 50), (255, 255, 255), 300, 50)
+        draw_text(screen, "Логин: " + username + ("|" if cursor_visible and input_active == "username" else ""), pygame.font.SysFont('serif', 30), (255, 255, 255), 300, 150)
+        draw_text(screen, "Пароль: " + "*" * len(password) + ("|" if cursor_visible and input_active == "password" else ""), pygame.font.SysFont('serif', 30), (255, 255, 255), 300, 200)
+        draw_text(screen, "Нажмите Enter для подтверждения", pygame.font.SysFont('serif', 20), (255, 255, 255), 250, 250)
+        draw_text(screen, "Нажмите Esc для возврата в меню", pygame.font.SysFont('serif', 20), (255, 255, 255), 250, 300)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    if username and password:
+                        user_id = login_user(username, password)
+                        if user_id:
+                            print(f"Пользователь {username} вошел с ID: {user_id}")
+                            return user_id
+                        else:
+                            draw_text(screen, "Ошибка: неверный логин или пароль", pygame.font.SysFont('serif', 20), (255, 0, 0), 250, 350)
+                    else:
+                        draw_text(screen, "Ошибка: заполните все поля", pygame.font.SysFont('serif', 20), (255, 0, 0), 250, 350)
+                elif event.key == pygame.K_BACKSPACE:
+                    if input_active == "username" and len(username) > 0:
+                        username = username[:-1]
+                    elif input_active == "password" and len(password) > 0:
+                        password = password[:-1]
+                elif event.key == pygame.K_TAB:
+                    input_active = "password" if input_active == "username" else "username"
+                elif event.key == pygame.K_ESCAPE:  # Кнопка "Назад"
+                    return None
+                else:
+                    if event.unicode.isalnum() or event.unicode in ['_', '-']:  # Разрешаем буквы, цифры и некоторые символы
                         if input_active == "username" and len(username) < 10:
                             username += event.unicode
                         elif input_active == "password" and len(password) < 10:
