@@ -3,9 +3,9 @@ import pygame
 
 pygame.init()
 
-FPS = 30
+FPS = 25
 width, height = 800, 600
-SPEED = 3
+SPEED = 5
 GRAVITY = 0.8
 JUMP_STRENGTH = 14
 camera_x = 0
@@ -63,6 +63,7 @@ class Player(AnimatedSprite):
         self.walk_frames = self.frames
         self.idle_frames = self.cut_idle_sheet(idle_sheet, columns, rows)
         self.is_moving = False
+        self.lives = 3  # Количество жизней
 
     def cut_idle_sheet(self, sheet, columns, rows):
         frames = []
@@ -110,41 +111,68 @@ class Player(AnimatedSprite):
 
         on_ground = False
 
-        # Гравитация если не на платформе
+        # Проверка коллизий с платформами
+        for platform in platforms:
+            if self.rect.colliderect(platform["rect"]) and self.velocity_y > 0:
+                if self.rect.bottom >= platform["rect"].top:
+                    self.rect.bottom = platform["rect"].top
+                    self.is_jumping = False
+                    self.velocity_y = 0
+                    on_ground = True
+
+        # Гравитация, если не на платформе
         if not on_ground and self.rect.bottom < height:
             self.is_jumping = True
 
-        # Не выходить за нижнюю границу экрана
-        if self.rect.bottom >= height:
-            self.rect.bottom = height
-            self.is_jumping = False
-            self.velocity_y = 0
+
 
         # Камера центрируется на игроке
         camera_x = max(0, self.rect.centerx - width // 2)
 
 
+# Класс врага (дерево)
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, image_path, x, y, width, height):
+        super().__init__()
+        self.image = pygame.transform.scale(load_image(image_path), (width, height))
+        self.rect = self.image.get_rect(topleft=(x, y))
+
+    def draw(self, screen, camera_x):
+        screen.blit(self.image, (self.rect.x - camera_x, self.rect.y))
+
+
+# Загрузка изображений
 walk_image = load_image('sprite_knight/k_walkjpg.png')
 k_image = load_image('sprite_knight/knight.png')
-background = pygame.transform.scale(load_image('dark_forest.jpg'), (width * 4, height))
+
+# Загрузка фона
+background_image = load_image('dark_forest.jpg')
+background_width = background_image.get_width()
+background_height = background_image.get_height()
+background = pygame.transform.scale(background_image, (background_width, height))
 
 platform_image = pygame.image.load(os.path.join("data", "plat_unfon3.png")).convert_alpha()
 platform_image = pygame.transform.scale(platform_image, (200, 60))
 platform_image.set_colorkey((255, 255, 255))
 
+# Платформы (опущены ниже)
 platforms = [
-    {"rect": pygame.Rect(0, height - 50, width * 4, 50), "image": None},  # нижняя платформа
-    {"rect": pygame.Rect(300, 400, 200, 20), "image": platform_image},
-    {"rect": pygame.Rect(600, 270, 150, 20), "image": platform_image},
-    {"rect": pygame.Rect(950, 200, 200, 20), "image": platform_image},
-    {"rect": pygame.Rect(1300, 400, 200, 20), "image": platform_image},
-    {"rect": pygame.Rect(1600, 270, 150, 20), "image": platform_image},
-    {"rect": pygame.Rect(1950, 200, 200, 20), "image": platform_image},
+    {"rect": pygame.Rect(0, height - 50, width * 4, 50), "image": None},  # Основная платформа внизу
+    {"rect": pygame.Rect(300, 450, 200, 20), "image": platform_image},
+    {"rect": pygame.Rect(600, 320, 150, 20), "image": platform_image},
+    {"rect": pygame.Rect(950, 250, 200, 20), "image": platform_image},
+    {"rect": pygame.Rect(1300, 450, 200, 20), "image": platform_image},
+    {"rect": pygame.Rect(1600, 320, 150, 20), "image": platform_image},
+    {"rect": pygame.Rect(1950, 250, 200, 20), "image": platform_image},
 ]
+
+
 knight = Player(walk_image, k_image, 6, 1, 100, 490)
 
 running = True
+
 while running:
+    delta_time = clock.tick(FPS) / 1000  # Время в секундах с последнего кадра
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -152,10 +180,26 @@ while running:
 
     all_sprites.update()
 
-    screen.blit(background, (-camera_x, 0))
+    # Отрисовка фона с повторением
+    for i in range(-1, 2):  # Повторяем фон для создания эффекта бесконечности
+        screen.blit(background, (i * background_width - camera_x % background_width, 0))
+
+    # Отрисовка платформ
+    for platform in platforms:
+        if platform["image"]:  # Если есть изображение платформы
+            screen.blit(platform["image"], (platform["rect"].x - camera_x, platform["rect"].y))
+        else:  # Если платформа без изображения (основная платформа)
+            pygame.draw.rect(screen, (0, 0, 0), (
+                platform["rect"].x - camera_x, platform["rect"].y, platform["rect"].width, platform["rect"].height))
 
     for sprite in all_sprites:
         screen.blit(sprite.image, (sprite.rect.x - camera_x, sprite.rect.y))
 
+    # Отображение жизней
+    font = pygame.font.Font(None, 36)
+    lives_text = font.render(f"Lives: {knight.lives}", True, (255, 255, 255))
+    screen.blit(lives_text, (10, 10))
+
     pygame.display.update()
-    clock.tick(FPS)
+
+pygame.quit()
